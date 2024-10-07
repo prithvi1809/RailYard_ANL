@@ -136,24 +136,40 @@ When people asking something else related to your well-being, just reply I'm goo
    [Format Restriction]: You must try to extract the .osm data path, the path contains no quotation mark, just a string, first look for the user's description, If not found, consider from the memory of previous conversation. And pass to the corresponding target.
    [Example]: If user said: Please run the simulation on SUMO (with one click) using map of "./map.osm", then you should remove quotation mark: "", and only take ./map.osm as action input. If user said: Please run the simulation on SUMO, you should try to find the path in memory, if you find it, just do as described, else, ask for human for .osm file path.
 18.[Description]: ODMatrixTest is a valid tool that you can use. You are able to run a testify on an OD matrix (or similar description). If you are asked to conduct OD(Origin-Destination) test, please condier using ODMatrixTest to realize this request.
-19. [Description]: constructYardNetwork function is a valid tool to construct a railway yard network. If you are asked to construct the yard network, human should provide path information of the osm data, human might ask similar words, you can imagine and infer the most possible categories. e.g., construct railway yard= construct yard = yard network = construct railway points, in this example, you can take all of them as 'yard', same thing for other categories, and only take the key word as input target. DO NOT USE FORMS Like: Category = "yard", just pass yard on. You should pass the path information together with the keyword.If it output "Cannot show an empty network", please return"There's no keyword in the target."
+
+19. [Description]: constructYardNetwork function is a valid tool to construct a railway yard network. 
+If you are asked to construct the yard network, human should provide path information of the osm data, 
+human might ask similar words, you can imagine and infer the most possible categories. e.g., construct railway yard= construct yard = 
+yard network = construct railway points, in this example, you can take all of them as 'yard', same thing for other categories, 
+and only take the key word as input target. DO NOT USE FORMS Like: Category = "yard", just pass yard on. 
+You should pass the path information together with the keyword.If it output "Cannot show an empty network", 
+please return"There's no keyword in the target." 
    [Example]: Human ask: Can you construct the yard network.  path,keyword: ./Data/download/OSM/IHB_yard.osm,yard
 
 20. [Description]: The generatePolygon function is a valid tool to construct the geometry shape of the railway yard network. If you are asked  to generate polygon, the human should provide the path of the .geojson file. The human might use similiar phrases such as "generate polygon", "create shape of the polygon for railway yard", "create polygon for yard network". You should extract the file path. 
-When providing the output, ensure to include the paths to the respective CSV files. If the function outputs an error indicating "Cannot show an empty network," you should return "There's no keyword in the target."
+When providing the output, ensure to include the paths to the respective CSV files. If the function outputs an error indicating "Cannot show an empty network," you should return "There's no keyword in the target." Note this is an independent function and it can be executed after user queries to construct a yard. 
+Emphasis: Always ask for the path to the .geojson file and never assume a previous path.
 [Example]:
 Human asks: Can you generate the polygon file for the yard?
 path: ./Data/download/OSM/IHB_yard.geojson
 
-21. [Description]: The generateBNetwork function is a valid tool to construct a B network for railway yards. If the user indicates they want to generate a B network after the polygon has been created, set the root path as the directory where the output of generatePolygon was saved. You might say, "Using the root directory path for the B network generation?".
+If the user queries to generate a polygon after constructing the yard network, the model should:
+1. Ask for the path to the .geojson file.
+2. Return the polygon generation output based on the provided path.
+3. Do not reference or assume any previous context.
+
+21. [Description]: The generateBNetwork function is a valid tool to construct a B network for railway yards..
 If you are asked to generate the B network without the previous function as generate Polygon, you should ask the human for the paths to the root directory. Dont use the earlier path that user had provided for a different operation. The human might use similar phrases such as "create B network," or "build railway for B network," which can all be inferred as a request to construct a B network. You should extract the relevant keywords and file paths. 
 When providing the output, ensure to include the paths to the respective CSV files along with the keyword "B network" If the function outputs an error indicating "Cannot show an empty network," you should return "There's no keyword in the target."
+[Emphasis]: You should always ask for the path to root directory and never assume previous path.
 [Example]:
 Human asks: Can you generate the B network?
 path,keyword: ./Data/download/OSM/,B Network
+
 22. [Description]: The generateANetwork function is a valid tool to construct a A network for railway yards.
 If you are asked to generate the A network, you should ask the human for the paths to the root directory. Dont use the earlier path that user had provided for a different operation. The human might use similar phrases such as "create A network," "Model A Network", or "build railway for A network," which can all be inferred as a request to construct a B network. You should extract the relevant keywords and file paths. 
 When providing the output, ensure to include the paths to the respective CSV files along with the keyword "A network" If the function outputs an error indicating "Cannot show an empty network," you should return "There's no keyword in the target."
+[Emphasis]: You should always ask for the path to root directory and never assume previous path.
 [Example]:
 Human asks: Can you generate the A network?
 path,keyword: ./Data/download/OSM/,A Network
@@ -163,6 +179,7 @@ You are forbidden to fabricate any tool names.
 You are forbidden to fabricate any input parameters when calling tools!
 [YOU MUST CHECK]
 When giving responses, please make sure the language you use is aligned with the the input. 
+
 """
 
 # ------------------------------------------------------------------------------
@@ -185,6 +202,8 @@ def reset(chat_history: list, thoughts: str):
 def respond(msg: str, chat_history: list, thoughts: str):
     print("new round...")
     print("input:{}".format(msg))
+    if "Generate Polygon" in msg: 
+        chat_history, thoughts = reset(chat_history, thoughts)
     # start a dialogue here:
     res, cb = bot.dialogue(msg)
     print("res:{}".format(res))

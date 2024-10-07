@@ -541,8 +541,9 @@ class constructYardNetwork:
         print("target:")
         print(target)
         
-        target_path, keyword = target.split(",")
-        print("keyword ", keyword)
+        # target_path, keyword = target.split(",")
+        target_path = target
+        # print("keyword ", keyword)
         # target_path = "/home/local/ASURITE/longchao/Desktop/project/LLM4Traffic/OpenTI/pivotalAgent/Data/download/OSM/IHB_yard.osm"
         time.sleep(0.5)
         try:
@@ -553,7 +554,7 @@ class constructYardNetwork:
 
         time_now = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
-        store_info = self.store_base + time_now + "-" + keyword +".png"
+        store_info = self.store_base + time_now +".png"
 
         orl.show_network(net, store_info)
         orl.save_network(net,output_folder='./csvfile')
@@ -825,9 +826,9 @@ class generateBNetwork:
         all_yard_node['resolution_type'] = 'Micro'
         all_gate['resolution_type'] = 'Gate'
         cross_resolution_node = pd.concat([all_node, all_yard_node, all_gate], axis = 0) 
-        cross_resolution_link = pd.concat([all_link, all_yard_link], axis = 0) 
-        cross_resolution_node.to_csv('C_Network_node_testing.csv', index = False)
-        cross_resolution_link.to_csv('C_Network_link_testing.csv', index = False)
+        cross_resolution_link = pd.concat([all_link, all_bridge, all_yard_link], axis = 0) 
+        cross_resolution_node.to_csv(os.path.join(output_folder,'C_Network_node_testing.csv'), index = False)
+        cross_resolution_link.to_csv(os.path.join(output_folder,'C_Network_link_testing.csv'), index = False)
 
 
         # 6. output individual files
